@@ -1,4 +1,4 @@
-# JBOC DR Automaton Project
+# Cloud Automation Project
 
 This is a project for CDK development with TypeScript to automate the provisioning of cloud resources.
 
@@ -29,7 +29,7 @@ aws configure sso
 You will be prompted to enter the following:
 
 ```
-SSO session name (Recommended): jboc
+SSO session name (Recommended): your-session-name
 SSO start URL [None]: start url copied above
 SSO region [None]: ca-central-1
 SSO registration scopes [sso:account:access]: leave blank
