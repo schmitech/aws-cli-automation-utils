@@ -1,0 +1,13 @@
+common:
+  bootstrap_s3_bucket_name: name-of-bootstrap-s3-bucket
+  vpc_id: vpc id
+  security_group_id: security group id
+  availability_zone: az-id
+  region: region-name
+  account: 'your-aws-account-id'
+
+ec2_instances:
+  - name: instance_name
+    instance_class: T3
+    instance_size: MICRO
+    ami_id: ami-id
