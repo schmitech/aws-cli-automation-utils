@@ -1,13 +1,23 @@
 common:
-  bootstrap_s3_bucket_name: name-of-bootstrap-s3-bucket
-  vpc_id: vpc id
-  security_group_id: security group id
-  availability_zone: az-id
-  region: region-name
-  account: 'your-aws-account-id'
+  bootstrap_s3_bucket_name: ca-central-1-s3-bootstrap-dr
+  vpc_id: vpc-0000000000
+  region: ca-central-1
+  account: '0000000000'
 
 ec2_instances:
-  - name: instance_name
+  - name: Transaction Manager - Tomcat
     instance_class: T3
-    instance_size: MICRO
-    ami_id: ami-id
+    instance_size: LARGE
+    ami_id: ami-0000000000
+    subnet_id: subnet-0000000000
+    security_group_id: sg-0000000000
+    availability_zone: ca-central-1a
+    volumes:
+      - device_name: /dev/sda1
+        size_gb: 100
+        volume_type: gp3
+        delete_on_termination: true
+      - device_name: /dev/sdb
+        size_gb: 30
+        volume_type: gp3
+        delete_on_termination: true

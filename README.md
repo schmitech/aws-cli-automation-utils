@@ -20,7 +20,13 @@ npm install -g aws-cdk
 
 ## AWS Account Setup
 
-Login to your AWS account and then click on Access Keys. In the SSO section, copy the start url. Run the following command:
+Login to AWS with your account if you've already configured an AWS SSO profile:
+
+aws sso login --profile your-profile-name
+
+Otherwise you will need to follow these steps. Before beginning, copy the URL from the AccessKeys link on the landing page that is shown after accessing AWS though the MS365 or office.com AWS app.
+
+Open a terminal and run this command:
 
 ```
 aws configure sso

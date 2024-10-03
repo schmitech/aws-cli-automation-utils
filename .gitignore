@@ -3,3 +3,4 @@ build
 package-lock.json
 cdk.context.json
 cdk.out
+*copy*

@@ -3,6 +3,13 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import * as cdk from 'aws-cdk-lib';
 
+interface VolumeConfig {
+  deviceName: string;
+  sizeGb: number;
+  volumeType: ec2.EbsDeviceVolumeType;
+  deleteOnTermination: boolean;
+}
+
 interface Ec2InstanceProps {
   vpc: ec2.IVpc;
   securityGroup: ec2.ISecurityGroup;
@@ -10,6 +17,8 @@ interface Ec2InstanceProps {
   machineImage: ec2.IMachineImage;
   availabilityZone: string;
   name: string;
+  subnetId: string;
+  volumes: VolumeConfig[];
 }
 
 export class Ec2InstanceConstruct extends Construct {
@@ -24,12 +33,18 @@ export class Ec2InstanceConstruct extends Construct {
 
     role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
 
-    // Select a specific subnet in the given AZ
-    const subnet = props.vpc.selectSubnets({
-      availabilityZones: [props.availabilityZone],
-      subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-      onePerAz: true
-    }).subnets[0];
+    const subnet = ec2.Subnet.fromSubnetAttributes(this, `${props.name}Subnet`, {
+      subnetId: props.subnetId,
+      availabilityZone: props.availabilityZone
+    });
+
+    const blockDevices: ec2.BlockDevice[] = props.volumes.map(volume => ({
+      deviceName: volume.deviceName,
+      volume: ec2.BlockDeviceVolume.ebs(volume.sizeGb, {
+        volumeType: volume.volumeType,
+        deleteOnTermination: volume.deleteOnTermination,
+      }),
+    }));
 
     this.instance = new ec2.Instance(this, props.name, {
       vpc: props.vpc,
@@ -42,6 +57,7 @@ export class Ec2InstanceConstruct extends Construct {
       instanceInitiatedShutdownBehavior: ec2.InstanceInitiatedShutdownBehavior.STOP,
       userData: ec2.UserData.forLinux(),
       requireImdsv2: true,
+      blockDevices: blockDevices,
     });
 
     cdk.Tags.of(this.instance).add('Name', props.name);
