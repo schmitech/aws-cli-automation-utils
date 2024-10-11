@@ -6,13 +6,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Ec2InstanceConstruct } from './ec2-instance-construct';
 
-interface VolumeConfig {
-  device_name: string;
-  size_gb: number;
-  volume_type: string;
-  delete_on_termination: boolean;
-}
-
 interface Ec2Config {
   name: string;
   instance_class: keyof typeof ec2.InstanceClass;
@@ -21,7 +14,6 @@ interface Ec2Config {
   security_group_id: string;
   subnet_id: string;
   availability_zone: string;
-  volumes: VolumeConfig[];
 }
 
 interface CommonConfig {
@@ -52,13 +44,6 @@ export class Ec2Stack extends cdk.Stack {
           instanceConfig.security_group_id
         );
 
-        const volumes = instanceConfig.volumes.map(volume => ({
-          deviceName: volume.device_name,
-          sizeGb: volume.size_gb,
-          volumeType: ec2.EbsDeviceVolumeType[volume.volume_type.toUpperCase() as keyof typeof ec2.EbsDeviceVolumeType],
-          deleteOnTermination: volume.delete_on_termination,
-        }));
-
         new Ec2InstanceConstruct(this, `EC2Instance${index}`, {
           vpc,
           securityGroup,
@@ -66,13 +51,12 @@ export class Ec2Stack extends cdk.Stack {
             ec2.InstanceClass[instanceConfig.instance_class],
             ec2.InstanceSize[instanceConfig.instance_size]
           ),
-          machineImage: ec2.MachineImage.genericLinux({ 
-            [config.common.region]: instanceConfig.ami_id 
+          machineImage: ec2.MachineImage.genericLinux({
+            [config.common.region]: instanceConfig.ami_id
           }),
           availabilityZone: instanceConfig.availability_zone,
           name: instanceConfig.name,
           subnetId: instanceConfig.subnet_id,
-          volumes: volumes,
         });
       } catch (error) {
         console.error(`Failed to create EC2 instance ${instanceConfig.name}:`, error);

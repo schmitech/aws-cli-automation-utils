@@ -3,13 +3,6 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import * as cdk from 'aws-cdk-lib';
 
-interface VolumeConfig {
-  deviceName: string;
-  sizeGb: number;
-  volumeType: ec2.EbsDeviceVolumeType;
-  deleteOnTermination: boolean;
-}
-
 interface Ec2InstanceProps {
   vpc: ec2.IVpc;
   securityGroup: ec2.ISecurityGroup;
@@ -18,7 +11,6 @@ interface Ec2InstanceProps {
   availabilityZone: string;
   name: string;
   subnetId: string;
-  volumes: VolumeConfig[];
 }
 
 export class Ec2InstanceConstruct extends Construct {
@@ -38,14 +30,7 @@ export class Ec2InstanceConstruct extends Construct {
       availabilityZone: props.availabilityZone
     });
 
-    const blockDevices: ec2.BlockDevice[] = props.volumes.map(volume => ({
-      deviceName: volume.deviceName,
-      volume: ec2.BlockDeviceVolume.ebs(volume.sizeGb, {
-        volumeType: volume.volumeType,
-        deleteOnTermination: volume.deleteOnTermination,
-      }),
-    }));
-
+    // Create the EC2 instance without specifying the volume
     this.instance = new ec2.Instance(this, props.name, {
       vpc: props.vpc,
       instanceType: props.instanceType,
@@ -57,7 +42,6 @@ export class Ec2InstanceConstruct extends Construct {
       instanceInitiatedShutdownBehavior: ec2.InstanceInitiatedShutdownBehavior.STOP,
       userData: ec2.UserData.forLinux(),
       requireImdsv2: true,
-      blockDevices: blockDevices,
     });
 
     cdk.Tags.of(this.instance).add('Name', props.name);

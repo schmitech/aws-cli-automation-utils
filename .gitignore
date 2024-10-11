@@ -4,3 +4,4 @@ package-lock.json
 cdk.context.json
 cdk.out
 *copy*
+.DS_Store

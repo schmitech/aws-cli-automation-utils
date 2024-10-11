@@ -89,7 +89,7 @@ Update parameters defined in ec2-config.yaml with your own values.
 
 Run cdk comnand to generate the CDK bootstrap. Use the account selected in previous SSO configuration step (replace AdministratorAccess-1234567 with your own):
 ```
-cdk bootstrap aws://XXXXXXX/ca-central-1 --profile profile-name-XXXXXXX --bootstrap-bucket-name your-s3-bucket-name
+cdk bootstrap --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess aws://XXXXXXX/ca-central-1 --profile profile-name-XXXXXXX --bootstrap-bucket-name your-s3-bucket-name
 ```
 
 Synthesize your stack to make sure there are no issues:
@@ -116,34 +116,7 @@ aws cloudformation describe-stacks --stack-name Ec2Stack --profile profile-name-
 ```
 
 ## Removing the stack
-The following These steps will remove your deployed resources, the CDK bootstrap resources, and clean up your local CDK context. After this, your account will be in a state as if CDK was never used.
-
-Be cautious when performing these actions, especially in a shared or production environment, as it will affect all CDK deployments in that account and region. Always double-check that you're operating in the correct account and region before executing these commands.
-
-To completely clean up all CDK-related resources, including your deployed stack and the bootstrap resources, you'll need to follow these steps (Remember to replace `1234567` with your actual AWS profile name):
-
-1. Destroy your deployed stack:
-   ```
-   cdk destroy --profile profile-name-XXXXXXX
-   ```
-   This command will remove all the resources created by your `Ec2Stack`.
-
-2. Delete the CDK bootstrap stack:
-   ```
-   aws cloudformation delete-stack --stack-name CDKToolkit --profile profile-name-XXXXXXX
-   ```
-   This command removes the CDK bootstrap stack, including the roles and buckets created during bootstrapping.
-
-3. Wait for the deletion to complete. You can check the status with:
-   ```
-   aws cloudformation describe-stacks --stack-name CDKToolkit --profile profile-name-XXXXXXX
-   ```
-   If the stack is successfully deleted, this command will return an error saying the stack does not exist.
-
-4. Go to AWS S3 console, empty the content and delete corrresponding bootstrap bucket.
-   
-5. If you want to remove any remaining CDK context from your local machine:
-   ```
-   rm cdk.context.json
-   ```
-   Run this in your project directory if the file exists.
+Run this comnand to remove the stack and associatd resources:
+```
+./destroy-and-cleanup.sh [your-profile-name]
+```

@@ -1,23 +1,49 @@
 common:
-  bootstrap_s3_bucket_name: ca-central-1-s3-bootstrap-dr
-  vpc_id: vpc-0000000000
+  bootstrap_s3_bucket_name: jboc-ca-central-1-s3-bootstrap-dr
+  vpc_id: vpc-1234567
   region: ca-central-1
-  account: '0000000000'
+  account: 'XXXXXXXXXXX'
 
 ec2_instances:
-  - name: Transaction Manager - Tomcat
+  - name: Gateway Tomcat - DRTest
+    instance_class: T3
+    instance_size: XLARGE
+    ami_id: ami-1234567
+    subnet_id: subnet-12345678
+    security_group_id: sg-1234567
+    availability_zone: ca-central-1d
+  - name: Gateway Couchbase - DRTest
+    instance_class: T3
+    instance_size: XLARGE
+    ami_id: ami-1234567
+    subnet_id: subnet-12345678
+    security_group_id: sg-12345678
+    availability_zone: ca-central-1d
+  - name: Ultra Engine IIS - DRTest
+    instance_class: T3
+    instance_size: XLARGE
+    ami_id: ami-1234567
+    subnet_id: subnet-12345678
+    security_group_id: sg-12345678
+    availability_zone: ca-central-1d
+  - name: UE Couchbase DB - DRTest
+    instance_class: T3
+    instance_size: XLARGE
+    ami_id: ami-1234567
+    subnet_id: subnet-12345678
+    security_group_id: sg-12345678
+    availability_zone: ca-central-1d
+  - name: Transaction Manager- DRTest
     instance_class: T3
     instance_size: LARGE
-    ami_id: ami-0000000000
-    subnet_id: subnet-0000000000
-    security_group_id: sg-0000000000
-    availability_zone: ca-central-1a
-    volumes:
-      - device_name: /dev/sda1
-        size_gb: 100
-        volume_type: gp3
-        delete_on_termination: true
-      - device_name: /dev/sdb
-        size_gb: 30
-        volume_type: gp3
-        delete_on_termination: true
+    ami_id: ami-1234567
+    subnet_id: subnet-12345678
+    security_group_id: sg-12345678
+    availability_zone: ca-central-1d
+  - name: Innovatrics 9 - DRTest
+    instance_class: T3
+    instance_size: XLARGE2
+    ami_id: ami-1234567
+    subnet_id: subnet-12345678
+    security_group_id: sg-12345678
+    availability_zone: ca-central-1d
