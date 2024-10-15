@@ -2,7 +2,7 @@
 
 This is a project for CDK development with TypeScript to automate the provisioning of cloud resources.
 
-## Prerequisites
+## Prerequisites (only for first time setup)
 
 Ensure you have the following installed:
 
@@ -13,6 +13,8 @@ Install npm (comes with Node.js)
 Install AWS CLI
 
 Install AWS CDK CLI
+
+Install AWS Session Manager Plugin (https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 
 ```
 npm install -g aws-cdk
@@ -72,6 +74,20 @@ Test configuration exists:
 aws configure list
 ```
 
+## Access pre-configured EC2 dev instance
+
+There is a instance in DEV account can use as testing environment. The instance is called 'dr-automaiton-solution'. You can connect to it via CloudShell or locally using AWS session manager. If using CloudShell, you can use the DEV account ID (something like 12345678109) as SSO has already been configured following the previous steps:
+
+```
+aws ssm start-session --target i-0b31a1147569ecfc6 --profile profile-name-XXXXXXX --region ca-central-1
+```
+
+Once connected, you need to change to ec2-user as by running:
+```
+sudo su - ec2-user
+```
+The project is under 'dr-automation' folder in home directory.
+
 ## Building the Project
 Go to project directory and run this command:
 
@@ -120,3 +136,5 @@ Run this comnand to remove the stack and associatd resources:
 ```
 ./destroy-and-cleanup.sh [your-profile-name]
 ```
+
+Finally go to AWS S3 web console. Choose bucket 'your-s3-bucket-name', then empty and remove the bucket.
