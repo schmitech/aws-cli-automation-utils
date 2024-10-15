@@ -15,6 +15,8 @@ interface Ec2InstanceProps {
 
 export class Ec2InstanceConstruct extends Construct {
   public readonly instance: ec2.Instance;
+  public readonly instanceId: string;
+  public readonly privateIpAddress: string;
 
   constructor(scope: Construct, id: string, props: Ec2InstanceProps) {
     super(scope, id);
@@ -30,7 +32,6 @@ export class Ec2InstanceConstruct extends Construct {
       availabilityZone: props.availabilityZone
     });
 
-    // Create the EC2 instance without specifying the volume
     this.instance = new ec2.Instance(this, props.name, {
       vpc: props.vpc,
       instanceType: props.instanceType,
@@ -45,5 +46,9 @@ export class Ec2InstanceConstruct extends Construct {
     });
 
     cdk.Tags.of(this.instance).add('Name', props.name);
+
+    // Store the instance ID and private IP address
+    this.instanceId = this.instance.instanceId;
+    this.privateIpAddress = this.instance.instancePrivateIp;
   }
 }
