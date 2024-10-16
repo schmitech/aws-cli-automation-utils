@@ -40,7 +40,7 @@ export class Ec2InstanceConstruct extends Construct {
       availabilityZone: props.availabilityZone,
       vpcSubnets: { subnets: [subnet] },
       role: role,
-      instanceInitiatedShutdownBehavior: ec2.InstanceInitiatedShutdownBehavior.STOP,
+      instanceInitiatedShutdownBehavior: ec2.InstanceInitiatedShutdownBehavior.TERMINATE,
       userData: ec2.UserData.forLinux(),
       requireImdsv2: true,
     });

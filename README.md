@@ -76,16 +76,18 @@ aws configure list
 
 ## Access pre-configured EC2 dev instance
 
-There is a instance in DEV account can use as testing environment. The instance is called 'dr-automaiton-solution'. You can connect to it via CloudShell or locally using AWS session manager. If using CloudShell, you can use the DEV account ID (something like 12345678109) as SSO has already been configured following the previous steps:
+There is a instance in DEV account can use as testing environment. The instance is called 'dr-automation-solution'. You can connect to it via CloudShell or locally using AWS session manager. If using CloudShell, you can use the DEV account ID (something like 12345678109) as SSO has already been configured following the previous steps (replace i-1234567 with real instance id):
 
 ```
-aws ssm start-session --target i-0b31a1147569ecfc6 --profile profile-name-XXXXXXX --region ca-central-1
+aws ssm start-session --target i-1234567 --profile profile-name-XXXXXXX --region ca-central-1
 ```
 
-Once connected, you need to change to ec2-user as by running:
+Once connected, you need to change to ec2-user and login to aws using SSO profile (used previous steps to create one if it doesn't exist):
 ```
 sudo su - ec2-user
+aws sso login  --profile profile-name-XXXXXXX
 ```
+
 The project is under 'dr-automation' folder in home directory.
 
 ## Building the Project
