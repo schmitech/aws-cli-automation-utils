@@ -31,4 +31,16 @@ run_aws_command aws cloudformation delete-stack --stack-name CDKToolkit --profil
 echo "Removing local CDK context files"
 rm -rf cdk.context.json cdk.out
 
+# Get the bootstrap bucket name from your config
+BUCKET_NAME=$(grep bootstrap_s3_bucket_name ec2-config.yaml | awk '{print $2}')
+
+# Empty the bucket, including all versions of all objects
+# run_aws_command aws s3 rm s3://$BUCKET_NAME --recursive --profile "$AWS_PROFILE"
+
+# echo "Attempting to delete bucket $BUCKET_NAME"
+
+# Delete the bucket
+# run_aws_command aws s3 rb s3://$BUCKET_NAME --force --profile "$AWS_PROFILE"
+
 echo "CDK stack destroyed, CDKToolkit stack deleted, local context removed using profile: $AWS_PROFILE"
+echo "Please go to AWS S3 Console and empty/remove bootstrap bucket '$BUCKET_NAME'."

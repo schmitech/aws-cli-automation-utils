@@ -16,6 +16,7 @@ Install AWS CDK CLI
 
 Install AWS Session Manager Plugin (https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 
+Install Node dependencies:
 ```
 npm install -g aws-cdk
 ```
@@ -101,11 +102,9 @@ npm install
 
 If you encounter TypeScript errors, ensure your tsconfig.json is correctly set up and run npm run build before cdk commands.
 
-## Deploying the CDK Workflow
+## Deploying EC2 Instances
 
-Update parameters defined in ec2-config.yaml with your own values.
-
-Run cdk comnand to generate the CDK bootstrap. Use the account selected in previous SSO configuration step (replace AdministratorAccess-1234567 with your own):
+First you need to update parameters in ec2-config.yaml with your own values (AMI IDs as well as Snapshot IDs). Save the file, then generate the CDK bootstrap. Use the account selected in previous SSO configuration step (replace profile-name-XXXXXXX with your own):
 ```
 cdk bootstrap --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess aws://XXXXXXX/ca-central-1 --profile profile-name-XXXXXXX --bootstrap-bucket-name your-s3-bucket-name
 ```
@@ -125,18 +124,13 @@ cdk diff --profile profile-name-XXXXXXX
 Deploy the stack (replace profile with your own as shown previously):
 
 ```
-cdk deploy --profile profile-name-XXXXXXX
+script deployment_output.txt cdk deploy --profile profile-name-XXXXXXX
 ```
 
-To check the status of the stack:
-```
-aws cloudformation describe-stacks --stack-name Ec2Stack --profile profile-name-XXXXXXX --query 'Stacks[0].StackStatus' --output text
-```
+Output will be saved in deployment_output.txt, including the IDs and IP addresses of each instance created. You will need this information for the rest of DR steps.
 
 ## Removing the stack
-Run this comnand to remove the stack and associatd resources:
+Once you are done with the DR environment and you determine is no longer needed, you may now remove it from AWS. Run this command to remove the stack and associatd resources:
 ```
 ./destroy-and-cleanup.sh [your-profile-name]
 ```
-
-Finally go to AWS S3 web console. Choose bucket 'your-s3-bucket-name', then empty and remove the bucket.
