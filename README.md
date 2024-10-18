@@ -1,136 +1,194 @@
-# Cloud Automation Project
+# DR Automation Project
 
-This is a project for CDK development with TypeScript to automate the provisioning of cloud resources.
+## Project Overview
 
-## Prerequisites (only for first time setup)
+The DR (Disaster Recovery) Automation Project uses AWS CDK with TypeScript to automate the provisioning of cloud resources for disaster recovery scenarios. This solution aims to simplify and streamline the process of setting up and managing DR environments in AWS.
 
-Ensure you have the following installed:
 
-Node.js (Latest stable version)
+## Table of Contents
 
-Install npm (comes with Node.js)
+- [DR Automation Project](#dr-automation-project)
+  - [Project Overview](#project-overview)
+  - [Table of Contents](#table-of-contents)
+  - [Prerequisites (applies to first-time setup)](#prerequisites-applies-to-first-time-setup)
+  - [First-Time Setup](#first-time-setup)
+    - [Install Global Dependencies](#install-global-dependencies)
+  - [AWS Account Setup](#aws-account-setup)
+    - [Login to AWS via SSO](#login-to-aws-via-sso)
+    - [Test AWS Access](#test-aws-access)
+  - [Local Development Environment](#local-development-environment)
+  - [Using the DR Automation Solution in DEV](#using-the-dr-automation-solution-in-dev)
+  - [Deploying EC2 Instances](#deploying-ec2-instances)
+  - [Testing](#testing)
+  - [Cleaning Up](#cleaning-up)
+  - [Maintenance and Updates](#maintenance-and-updates)
+  - [Troubleshooting](#troubleshooting)
 
-Install AWS CLI
+## Prerequisites (applies to first-time setup)
 
-Install AWS CDK CLI
+Ensure the following are installed on your system:
 
-Install AWS Session Manager Plugin (https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+1. **Node.js** (latest LTS version)
+2. **NPM** (comes with Node.js)
+3. **AWS CLI** (latest version)
+4. **AWS CDK CLI** (latest version)
+5. **AWS Session Manager Plugin**  
+   [Installation Guide](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 
-Install Node dependencies:
-```
+## First-Time Setup
+
+### Install Global Dependencies
+
+Run the following command to install necessary global dependencies:
+
+```bash
 npm install -g aws-cdk
 ```
 
 ## AWS Account Setup
 
-Login to AWS with your account if you've already configured an AWS SSO profile:
+Skip this section if you already have an AWS account set up.
 
+### Login to AWS via SSO
+
+If you have an existing AWS SSO profile:
+
+```bash
 aws sso login --profile your-profile-name
-
-Otherwise you will need to follow these steps. Before beginning, copy the URL from the AccessKeys link on the landing page that is shown after accessing AWS though the MS365 or office.com AWS app.
-
-Open a terminal and run this command:
-
 ```
+
+For new SSO setup:
+
+1. Log in to AWS via MS365 or Office.com AWS app and copy the URL from the AccessKeys link.
+2. Open a terminal and run:
+
+```bash
 aws configure sso
 ```
 
-You will be prompted to enter the following:
+3. Follow the prompts, providing the necessary information.
 
-```
-SSO session name (Recommended): your-session-name
-SSO start URL [None]: start url copied above
-SSO region [None]: ca-central-1
-SSO registration scopes [sso:account:access]: leave blank
+### Test AWS Access
 
-There are 3 AWS accounts available to you. (select the account of choice using arrow keys, then pressing enter)
-Using the account ID XXXXXXXX
-The only role available to you is: RoleName
-Using the role name RoleName"
-CLI default client Region [ca-central-1]: (leave blank)
-CLI default output format [None]: (leave blank)
-CLI profile name [profile-name-XXXXXXX]: (Specify your own or leave blank for default)
+Verify your AWS access:
+
+```bash
+aws s3 ls --profile your-profile-name
 ```
 
-Test access to AWS by specifing the profile name using --profile, for example:
+Ensure the `~/.aws/` directory contains the required configuration files:
 
-```
-aws s3 ls --profile profile-name-XXXXXXX
-```
-
-Make sure files have been created under yout aws config directory in your home directory. You should see 3 files: sso, config and cli:
-
-```
-ls -lrt ~/.aws/                    
+```bash
+ls -lrt ~/.aws/
 ```
 
-To obtain account details, issue this command:
-```
-aws sts get-caller-identity --profile profile-name-XXXXXXX
-```
+## Local Development Environment
 
-Test configuration exists:
+1. Clone the repository (use your preferred method, i.e. VS Code, Git Desktop, etc.):
+   ```bash
+   git clone [repository-url]
+   cd dr-automation
+   ```
 
-```
-aws configure list
-```
+2. Install project dependencies:
+   ```bash
+   npm install
+   ```
 
-## Access pre-configured EC2 dev instance
+## Using the DR Automation Solution in DEV
 
-There is a instance in DEV account can use as testing environment. The instance is called 'dr-automation-solution'. You can connect to it via CloudShell or locally using AWS session manager. If using CloudShell, you can use the DEV account ID (something like 12345678109) as SSO has already been configured following the previous steps (replace i-1234567 with real instance id):
+The project is available on an EC2 instance named 'dr-automation-solution' in the DEV environment (replace i-1234567 with real instance id).
 
-```
-aws ssm start-session --target i-1234567 --profile profile-name-XXXXXXX --region ca-central-1
-```
+1. Connect to the instance:
+   ```bash
+   aws ssm start-session --target i-1234567 --profile your-profile-name --region ca-central-1
+   ```
 
-Once connected, you need to change to ec2-user and login to aws using SSO profile (used previous steps to create one if it doesn't exist):
-```
-sudo su - ec2-user
-aws sso login  --profile profile-name-XXXXXXX
-```
-
-The project is under 'dr-automation' folder in home directory.
-
-## Building the Project
-Go to project directory and run this command:
-
-Then install the libraries:
-
-```
-npm install
-```
-
-If you encounter TypeScript errors, ensure your tsconfig.json is correctly set up and run npm run build before cdk commands.
+2. Once connected, run:
+   ```bash
+   sudo su - ec2-user
+   cd dr-automation
+   aws sso login --profile your-profile-name
+   ```
 
 ## Deploying EC2 Instances
 
-First you need to update parameters in ec2-config.yaml with your own values (AMI IDs as well as Snapshot IDs). Save the file, then generate the CDK bootstrap. Use the account selected in previous SSO configuration step (replace profile-name-XXXXXXX with your own):
-```
-cdk bootstrap --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess aws://XXXXXXX/ca-central-1 --profile profile-name-XXXXXXX --bootstrap-bucket-name your-s3-bucket-name
+1. Navigate to the project directory:
+   ```bash
+   cd dr-automation
+   ```
+
+2. Edit `ec2-config.yaml`:
+   - Update AMI IDs based on AWS Backup job results
+   - Modify instance types or other parameters as needed
+
+3. Bootstrap CDK (replace 'your-bucket-name' with the bootstrap name to match the name defined in ec2-config.yaml):
+   ```bash
+   cdk bootstrap --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess aws://ACCOUNT-ID/ca-central-1 --profile your-profile-name --bootstrap-bucket-name your-bucket-name
+   ```
+
+4. Synthesize the stack:
+   ```bash
+   cdk synth
+   ```
+
+5. Deploy the stack:
+   ```bash
+   script -c "cdk deploy --require-approval broadening --profile your-profile-name" deployment_output.out
+   ```
+
+   The deployment output, including instance IDs and IP addresses, will be saved in `deployment_output.out`.
+
+## Testing
+
+After deployment, perform these basic tests:
+
+1. Verify EC2 instance accessibility:
+   ```bash
+   aws ec2 describe-instances --profile your-profile-name
+   ```
+
+2. Check CloudWatch for any error logs or metrics
+
+3. Attempt to connect to an instance using Systems Manager:
+   ```bash
+   aws ssm start-session --target i-1234567 --profile your-profile-name
+   ```
+
+## Cleaning Up
+
+To remove the stack and associated resources:
+
+```bash
+./destroy-and-cleanup.sh your-profile-name
 ```
 
-Synthesize your stack to make sure there are no issues:
+## Maintenance and Updates
 
-```
-cdk synth
-```
+1. Regularly update the AWS CDK and other dependencies:
+   ```bash
+   npm update
+   ```
 
-Run this command to update CDK Bootstrap whenever you update the code under lib folder (i.e. ec2-stack.ts): 
+2. Check for AWS service updates that might affect the DR solution.
 
-```
-cdk diff --profile profile-name-XXXXXXX
-```
+3. Review and update the `ec2-config.yaml` file periodically to ensure it reflects current requirements.
 
-Deploy the stack (replace profile with your own as shown previously):
+## Troubleshooting
 
-```
-script deployment_output.txt cdk deploy --profile profile-name-XXXXXXX
-```
+Common issues and solutions:
 
-Output will be saved in deployment_output.txt, including the IDs and IP addresses of each instance created. You will need this information for the rest of DR steps.
+1. **CDK deployment fails**: 
+   - Ensure you have the latest CDK version installed
+   - Check AWS credentials and permissions
+   - Review CloudFormation events in the AWS Console
 
-## Removing the stack
-Once you are done with the DR environment and you determine is no longer needed, you may now remove it from AWS. Run this command to remove the stack and associatd resources:
-```
-./destroy-and-cleanup.sh [your-profile-name]
-```
+2. **Unable to connect to EC2 instances**: 
+   - Verify VPC and security group settings
+   - Check instance status in EC2 dashboard
+   - Ensure Systems Manager Agent is running on the instance
+
+3. **AWS SSO login issues**: 
+   - Clear browser cookies and cache
+   - Verify your SSO credentials
+   - Check if your SSO session has expired

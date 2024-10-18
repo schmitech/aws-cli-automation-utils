@@ -2,6 +2,6 @@ node_modules
 build
 package-lock.json
 cdk.context.json
-cdk.out
+*.out
 *copy*
 .DS_Store
