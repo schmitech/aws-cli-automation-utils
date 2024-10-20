@@ -5,4 +5,4 @@ cdk.context.json
 *.out
 *copy*
 .DS_Store
-instance-info.json
+instance_info.json

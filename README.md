@@ -4,6 +4,32 @@
 
 The DR (Disaster Recovery) Automation Project uses AWS CDK with TypeScript to automate the provisioning of cloud resources for disaster recovery scenarios. This solution aims to simplify and streamline the process of setting up and managing DR environments in AWS.
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant CDK
+    participant Ec2Stack
+    participant Ec2InstanceConstruct
+    participant AWS EC2
+    participant CheckInstanceStatusLambda
+
+    User->>CDK: Deploy stack
+    CDK->>Ec2Stack: Create stack
+    Ec2Stack->>Ec2Stack: Load config from YAML
+    loop For each EC2 instance in config
+        Ec2Stack->>Ec2InstanceConstruct: Create EC2 instance
+        Ec2InstanceConstruct->>AWS EC2: Create EC2 instance
+        AWS EC2-->>Ec2InstanceConstruct: Return instance details
+        Ec2InstanceConstruct-->>Ec2Stack: Return instance info
+        Ec2Stack->>Ec2Stack: Store instance info
+    end
+    Ec2Stack->>CheckInstanceStatusLambda: Create Lambda function
+    CheckInstanceStatusLambda->>AWS EC2: Check instances status
+    AWS EC2-->>CheckInstanceStatusLambda: Return status
+    CheckInstanceStatusLambda-->>Ec2Stack: Report instances ready
+    Ec2Stack->>CDK: Output instance info
+    CDK-->>User: Deployment complete
+```
 
 ## Table of Contents
 
@@ -28,11 +54,12 @@ The DR (Disaster Recovery) Automation Project uses AWS CDK with TypeScript to au
 
 Ensure the following are installed on your system:
 
-1. **Node.js** (latest LTS version)
-2. **NPM** (comes with Node.js)
-3. **AWS CLI** (latest version)
-4. **AWS CDK CLI** (latest version)
-5. **AWS Session Manager Plugin**  
+1. **Python** (3.9.x or above)
+2. **Node.js** (latest LTS version)
+3. **NPM** (comes with Node.js)
+4. **AWS CLI** (latest version)
+5. **AWS CDK CLI** (latest version)
+6. **AWS Session Manager Plugin**  
    [Installation Guide](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 
 ## First-Time Setup

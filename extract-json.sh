@@ -33,4 +33,4 @@ with open('$output_file', 'w') as f:
 # Remove the temporary file
 rm "$temp_file"
 
-echo "JSON payload extracted, pretty-printed, and saved to $output_file"
+echo "JSON with instance details saved to $output_file"
