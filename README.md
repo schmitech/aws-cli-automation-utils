@@ -69,7 +69,7 @@ Ensure the following are installed on your system:
 Run the following command to install necessary global dependencies:
 
 ```bash
-npm install -g aws-cdk
+npm install -g aws-cdk@2.151.0
 ```
 
 ## AWS Account Setup
@@ -160,11 +160,20 @@ The project is available on an EC2 instance named 'dr-automation-solution' in th
    ```
 
 5. Deploy the stack:
+   
+   On Amazon Linux (EC2 AMI):
    ```bash
    script -c "cdk deploy --require-approval broadening --profile your-profile-name" deployment_output.out
    ```
 
+   On Mac:
+   ```
+   script deployment_output.out cdk deploy --profile your-profile-name
+   ```
+
    The deployment output, including instance IDs and IP addresses, will be saved in `deployment_output.out`.
+
+   Run script "extract-instance-info-from-output-file.sh" to extract the instances info into a JSON file, output will be stored in 'instance_info.json'.
 
 ## Testing
 
