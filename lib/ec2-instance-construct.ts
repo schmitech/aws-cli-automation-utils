@@ -31,6 +31,7 @@ export class Ec2InstanceConstruct extends Construct {
       subnetId: props.subnetId,
       availabilityZone: props.availabilityZone
     });
+    cdk.Annotations.of(subnet).acknowledgeWarning('@aws-cdk/aws-ec2:noSubnetRouteTableId')
 
     this.instance = new ec2.Instance(this, props.name, {
       vpc: props.vpc,
