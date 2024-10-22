@@ -2,6 +2,9 @@
 
 set -e  # Exit immediately if a command exits with a non-zero status.
 
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
 # Check if a profile was provided
 if [ $# -eq 0 ]; then
     echo "Please provide an AWS profile as an argument."
@@ -35,13 +38,5 @@ rm -rf cdk.context.json cdk.out deployment_output.out instance_info.json
 # Get the bootstrap bucket name from your config
 BUCKET_NAME=$(grep bootstrap_s3_bucket_name ec2-config.yaml | awk '{print $2}')
 
-# Empty the bucket, including all versions of all objects
-# run_aws_command aws s3 rm s3://$BUCKET_NAME --recursive --profile "$AWS_PROFILE"
-
-# echo "Attempting to delete bucket $BUCKET_NAME"
-
-# Delete the bucket
-# run_aws_command aws s3 rb s3://$BUCKET_NAME --force --profile "$AWS_PROFILE"
-
-echo "CDK stack destroyed, CDKToolkit stack deleted, local context removed using profile: $AWS_PROFILE"
-echo "Please go to AWS S3 Console and empty/remove bootstrap bucket '$BUCKET_NAME'."
+echo "CDK stack destroyed, CDKToolkit stack deleted, local context removed."
+echo -e "${YELLOW}Please go to AWS S3 Console and manually empty and delete bucket named '$BUCKET_NAME'.${NC}"
