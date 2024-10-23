@@ -150,6 +150,10 @@ The project is available on an EC2 instance named 'dr-automation-solution' in th
    - Modify instance types or other parameters as needed
 
 3. Bootstrap CDK (replace 'your-bucket-name' with the bootstrap name to match the name defined in ec2-config.yaml):
+   
+   First you need make sure the bucket name you are using does not exist, so check in S3 console to make sure it's not present
+   before running this command, otherwise you may get an error indicating 'bucket already exists'.
+   
    ```bash
    cdk bootstrap --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess aws://ACCOUNT-ID/ca-central-1 --profile your-profile-name --bootstrap-bucket-name your-bucket-name
    ```
