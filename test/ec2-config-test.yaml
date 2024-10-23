@@ -1,0 +1,49 @@
+common:
+  bootstrap_s3_bucket_name: ca-central-1-s3-bootstrap-dr
+  vpc_id: vpc-1234567
+  region: ca-central-1
+  account: '1234567'
+
+ec2_instances:
+  - name: test-instance-1
+    instance_class: T3
+    instance_size: XLARGE
+    ami_id: ami-12345678
+    subnet_id: subnet-12345678
+    security_group_id: sg-1234567
+    availability_zone: ca-central-1a
+  - name: test-instance-2
+    instance_class: T3
+    instance_size: XLARGE
+    ami_id: ami-12345678
+    subnet_id: subnet-12345678
+    security_group_id: sg-1234567
+    availability_zone: ca-central-1a
+  - name: test-instance-3
+    instance_class: T3
+    instance_size: XLARGE
+    ami_id: ami-12345678
+    subnet_id: subnet-12345678
+    security_group_id: sg-1234567
+    availability_zone: ca-central-1a
+  - name: test-instance-4
+    instance_class: T3
+    instance_size: XLARGE
+    ami_id: ami-12345678
+    subnet_id: subnet-12345678
+    security_group_id: sg-1234567
+    availability_zone: ca-central-1a
+  - name: test-instance-5
+    instance_class: T3
+    instance_size: LARGE
+    ami_id: ami-12345678
+    subnet_id: subnet-12345678
+    security_group_id: sg-1234567
+    availability_zone: ca-central-1a
+  - name: test-instance-6
+    instance_class: T3
+    instance_size: XLARGE2
+    ami_id: ami-12345678
+    subnet_id: subnet-12345678
+    security_group_id: sg-1234567
+    availability_zone: ca-central-1a
