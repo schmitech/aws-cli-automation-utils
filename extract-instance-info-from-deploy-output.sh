@@ -1,7 +1,19 @@
 #!/bin/bash
 
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <input_file>"
+    echo "Example: $0 deployment_output.out"
+    exit 1
+fi
+
 # Input file containing the CDK deploy output
-input_file="deployment_output.out"
+input_file="$1"
+
+# Check if input file exists
+if [ ! -f "$input_file" ]; then
+    echo "Error: Input file '$input_file' not found"
+    exit 1
+fi
 
 # Output file to store the extracted JSON
 output_file="instance_info.json"
