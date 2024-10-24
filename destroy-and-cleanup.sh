@@ -33,7 +33,7 @@ run_aws_command aws cloudformation delete-stack --stack-name CDKToolkit --profil
 
 echo "Clearing CDK context"
 cdk context --clear
-rm -rf cdk.context.json cdk.out deployment_output.out instance_info.json
+rm -rf cdk.context.json cdk.out deployment*.out instance_info.json
 
 # Get the bootstrap bucket name from your config
 BUCKET_NAME=$(grep bootstrap_s3_bucket_name ec2-config.yaml | awk '{print $2}')
