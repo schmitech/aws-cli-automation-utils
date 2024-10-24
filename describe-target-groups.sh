@@ -11,29 +11,88 @@ fi
 aws_profile=$1
 shift
 
-# Build the jq filter for multiple search terms
-jq_filter='.TargetGroups[] | select('
+# Function to get instance name from tags
+get_instance_name() {
+    local profile=$1
+    local instance_id=$2
+    aws ec2 describe-tags \
+        --profile "$profile" \
+        --filters "Name=resource-id,Values=$instance_id" "Name=key,Values=Name" \
+        --query 'Tags[0].Value' \
+        --output text 2>/dev/null || echo "N/A"
+}
 
-# Loop through remaining arguments to build the regex pattern
-first_term=true
-for term in "$@"; do
-    if $first_term; then
-        jq_filter+="(.TargetGroupName | test(\"$term\"; \"i\"))"
-        first_term=false
-    else
-        jq_filter+=" or (.TargetGroupName | test(\"$term\"; \"i\"))"
-    fi
-done
-
-# Complete the jq filter to include desired fields
-jq_filter="$jq_filter) | {\"Target Group Name\": .TargetGroupName, \"Port\": .Port, \"Protocol\": .Protocol, \"VPC ID\": .VpcId, \"Target Type\": .TargetType}"
-
-# Run the AWS command with the profile and constructed filter
 echo "Fetching target groups matching: $@"
-aws elbv2 describe-target-groups --profile "$aws_profile" | jq "$jq_filter"
 
-# Check if the AWS command was successful
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to retrieve target groups. Please check your AWS profile and permissions."
+# Create search pattern for multiple terms
+search_pattern=$(printf "|%s" "$@")
+search_pattern=${search_pattern:1}  # Remove leading |
+
+# Get all matching target groups and their details in one go
+aws elbv2 describe-target-groups --profile "$aws_profile" | \
+jq --arg pattern "$search_pattern" -r '
+[
+  .TargetGroups[] | 
+  select(.TargetGroupName | test($pattern;"i")) | 
+  {
+    "Target Group Name": .TargetGroupName,
+    "Target Group ARN": .TargetGroupArn,
+    "Port": .Port,
+    "Protocol": .Protocol,
+    "VPC ID": .VpcId,
+    "Target Type": .TargetType,
+    "Registered Instances": []
+  }
+]' > target_groups.json
+
+# Exit if no target groups found
+if [ ! -s target_groups.json ] || [ "$(cat target_groups.json)" = "[]" ]; then
+    echo "No matching target groups found."
+    rm target_groups.json
+    exit 0
+fi
+
+# Process each target group and add instance information
+jq -c '.[]' target_groups.json | while read -r group; do
+    tg_arn=$(echo "$group" | jq -r '."Target Group ARN"')
+    
+    # Get instance health information
+    instances=$(aws elbv2 describe-target-health \
+        --profile "$aws_profile" \
+        --target-group-arn "$tg_arn" 2>/dev/null)
+    
+    if [ -n "$instances" ]; then
+        # Process each instance and add instance name
+        instances_with_names=$(echo "$instances" | jq -r '.TargetHealthDescriptions[] | {
+            "Instance ID": .Target.Id,
+            "Port": .Target.Port,
+            "Health State": .TargetHealth.State,
+            "Health Description": .TargetHealth.Description,
+            "Instance Name": "pending"
+        }' | jq -c '.')
+        
+        # Add instance names
+        instances_array="[]"
+        while IFS= read -r instance; do
+            instance_id=$(echo "$instance" | jq -r '."Instance ID"')
+            instance_name=$(get_instance_name "$aws_profile" "$instance_id")
+            instance_with_name=$(echo "$instance" | jq --arg name "$instance_name" '. + {"Instance Name": $name}')
+            instances_array=$(echo "$instances_array" | jq --argjson inst "$instance_with_name" '. + [$inst]')
+        done < <(echo "$instances_with_names")
+        
+        # Update the group with instances
+        echo "$group" | jq --argjson insts "$instances_array" '. + {"Registered Instances": $insts}'
+    else
+        # No instances registered
+        echo "$group"
+    fi
+done | jq -s '.' > result.json
+
+# Output the final result and cleanup
+cat result.json
+rm target_groups.json result.json
+
+if [ ${PIPESTATUS[0]} -ne 0 ]; then
+    echo "Error: Failed to process target groups information."
     exit 1
 fi

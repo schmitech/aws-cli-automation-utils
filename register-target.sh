@@ -10,6 +10,7 @@ wait_for_target_health() {
     local profile=$1
     local tg_arn=$2
     local instance_id=$3
+    local port=$4
     local max_attempts=30  # 5 minutes total (30 * 10 seconds)
     local attempt=1
 
@@ -18,7 +19,7 @@ wait_for_target_health() {
         health_state=$(aws elbv2 describe-target-health \
             --profile "$profile" \
             --target-group-arn "$tg_arn" \
-            --targets "Id=$instance_id" | \
+            --targets "Id=$instance_id,Port=$port" | \
             jq -r '.TargetHealthDescriptions[0].TargetHealth.State')
 
         echo "Current health state: $health_state (Attempt $attempt of $max_attempts)"
@@ -31,7 +32,7 @@ wait_for_target_health() {
             health_detail=$(aws elbv2 describe-target-health \
                 --profile "$profile" \
                 --target-group-arn "$tg_arn" \
-                --targets "Id=$instance_id" | \
+                --targets "Id=$instance_id,Port=$port" | \
                 jq -r '.TargetHealthDescriptions[0].TargetHealth.Description')
             echo "Target is unhealthy. Reason: $health_detail"
             return 1
@@ -89,7 +90,7 @@ if [ $# -lt 4 ]; then
     echo "Example: $0 1234567 arn:aws:elasticloadbalancing:region:account:targetgroup/name/1234567890 i-0123456789abcdef0 8080"
     echo ""
     echo "Parameters:"
-    echo "  aws_profile        : AWS profile to use for the operation"
+    echo "  aws_profile       : AWS profile to use for the operation"
     echo "  target_group_arn  : ARN of the target group"
     echo "  instance_id       : ID of the EC2 instance to register"
     echo "  port             : Port number (1-65535) on which the instance will receive traffic"
@@ -151,13 +152,13 @@ fi
 echo "Registration request successful"
 
 # Wait for target to become healthy
-if wait_for_target_health "$aws_profile" "$target_group_arn" "$instance_id"; then
+if wait_for_target_health "$aws_profile" "$target_group_arn" "$instance_id" "$port"; then
     # Show final target details
     echo -e "\nFinal target details:"
     aws elbv2 describe-target-health \
         --profile "$aws_profile" \
         --target-group-arn "$target_group_arn" \
-        --targets "Id=$instance_id" | \
+        --targets "Id=$instance_id,Port=$port" | \
         jq -r '.TargetHealthDescriptions[] | {
             "Instance ID": .Target.Id,
             "Port": .Target.Port,
