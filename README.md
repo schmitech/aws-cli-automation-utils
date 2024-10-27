@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The DR (Disaster Recovery) Automation Project uses AWS CDK with TypeScript to automate the provisioning of cloud resources for disaster recovery scenarios. This solution aims to simplify and streamline the process of setting up and managing DR environments in AWS.
+This project leverages AWS CDK with TypeScript to automate cloud resource provisioning for disaster recovery. It streamlines environment setup and management in AWS, ensuring swift recovery in disaster scenarios.
 
 ```mermaid
 sequenceDiagram
@@ -36,21 +36,26 @@ sequenceDiagram
 - [DR Automation Project](#dr-automation-project)
   - [Project Overview](#project-overview)
   - [Table of Contents](#table-of-contents)
-  - [Prerequisites (applies to first-time setup)](#prerequisites-applies-to-first-time-setup)
+  - [Prerequisites (first-time setup only)](#prerequisites-first-time-setup-only)
   - [First-Time Setup](#first-time-setup)
     - [Install Global Dependencies](#install-global-dependencies)
   - [AWS Account Setup](#aws-account-setup)
     - [Login to AWS via SSO](#login-to-aws-via-sso)
     - [Test AWS Access](#test-aws-access)
-  - [Local Development Environment](#local-development-environment)
-  - [Using the DR Automation Solution in DEV](#using-the-dr-automation-solution-in-dev)
+  - [Git Repository](#git-repository)
+  - [Using the Project](#using-the-project)
   - [Deploying EC2 Instances](#deploying-ec2-instances)
-  - [Testing](#testing)
+  - [Verification](#verification)
+  - [Adding an Instance to Target Group](#adding-an-instance-to-target-group)
   - [Cleaning Up](#cleaning-up)
+    - [Automated Cleanup](#automated-cleanup)
+    - [What Gets Removed](#what-gets-removed)
+    - [Manual Cleanup Required](#manual-cleanup-required)
+    - [Verification Steps](#verification-steps)
   - [Maintenance and Updates](#maintenance-and-updates)
   - [Troubleshooting](#troubleshooting)
 
-## Prerequisites (applies to first-time setup)
+## Prerequisites (first-time setup only)
 
 Ensure the following are installed on your system:
 
@@ -59,8 +64,8 @@ Ensure the following are installed on your system:
 3. **NPM** (comes with Node.js)
 4. **AWS CLI** (latest version)
 5. **AWS CDK CLI** (latest version)
-6. **AWS Session Manager Plugin**  
-   [Installation Guide](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+6. **AWS Session Manager Plugin**
+7. **jq**
 
 ## First-Time Setup
 
@@ -81,7 +86,7 @@ Skip this section if you already have an AWS account set up.
 If you have an existing AWS SSO profile:
 
 ```bash
-aws sso login --profile your-profile-name
+aws sso login --profile your-aws-sso-profile-name
 ```
 
 For new SSO setup:
@@ -93,25 +98,24 @@ For new SSO setup:
 aws configure sso
 ```
 
-3. Follow the prompts, providing the necessary information.
+Follow the prompts, providing the necessary information (this info is available on your AWS account landing page), then make sure profile has been created once finished setting up your sso profile:
+
+```bash
+cat ~/.aws/config
+```
+
 
 ### Test AWS Access
 
 Verify your AWS access:
 
 ```bash
-aws s3 ls --profile your-profile-name
+aws s3 ls --profile your-aws-sso-profile-name
 ```
 
-Ensure the `~/.aws/` directory contains the required configuration files:
+## Git Repository
 
-```bash
-ls -lrt ~/.aws/
-```
-
-## Local Development Environment
-
-1. Clone the repository (use your preferred method, i.e. VS Code, Git Desktop, etc.):
+1. Clone the repository (use 'dr-automation' as folder name):
    ```bash
    git clone [repository-url]
    cd dr-automation
@@ -122,20 +126,20 @@ ls -lrt ~/.aws/
    npm install
    ```
 
-## Using the DR Automation Solution in DEV
+## Using the Project
 
-The project is available on an EC2 instance named 'dr-automation-solution' in the DEV environment (replace i-1234567 with real instance id).
+The project is available on an EC2 instance named 'dr-automation-solution' in the DEV environment.
 
-1. Connect to the instance:
+1. Connect to the instance (replace i-1234567 with real instance id):
    ```bash
-   aws ssm start-session --target i-1234567 --profile your-profile-name --region ca-central-1
+   aws ssm start-session --target i-1234567 --profile your-aws-sso-profile-name --region ca-central-1
    ```
 
 2. Once connected, run:
    ```bash
    sudo su - ec2-user
    cd dr-automation
-   aws sso login --profile your-profile-name
+   aws sso login --profile your-aws-sso-profile-name
    ```
 
 ## Deploying EC2 Instances
@@ -149,13 +153,13 @@ The project is available on an EC2 instance named 'dr-automation-solution' in th
    - Update AMI IDs based on AWS Backup job results
    - Modify instance types or other parameters as needed
 
-3. Bootstrap CDK (replace 'your-bucket-name' with the bootstrap name to match the name defined in ec2-config.yaml):
+3. Bootstrap CDK.
    
    First you need make sure the bucket name you are using does not exist, so check in S3 console to make sure it's not present
    before running this command, otherwise you may get an error indicating 'bucket already exists'.
    
    ```bash
-   cdk bootstrap --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess aws://ACCOUNT-ID/ca-central-1 --profile your-profile-name --bootstrap-bucket-name your-bucket-name
+   ./cdk-bootstrap.sh your-aws-account-id your-aws-sso-profile-name
    ```
 
 4. Synthesize the stack:
@@ -165,43 +169,123 @@ The project is available on an EC2 instance named 'dr-automation-solution' in th
 
 5. Deploy the stack:
    
-   On Amazon Linux (EC2 AMI):
    ```bash
-   script -c "cdk deploy --require-approval broadening --profile your-profile-name" deployment_output.out
+   ./cdk-deploy.sh your-aws-sso-profile-name
    ```
 
-   On Mac:
-   ```
-   script deployment_output.out cdk deploy --profile your-profile-name
-   ```
+   The deployment output will be saved in `deployment_output_yyyymmdd_hhmm.out`.
 
-   The deployment output, including instance IDs and IP addresses, will be saved in `deployment_output.out`.
-
-   Run script "extract-instance-info-from-output-file.sh" to extract the instances info into a JSON file, output will be stored in 'instance_info.json'.
-
-## Testing
+## Verification
 
 After deployment, perform these basic tests:
 
 1. Verify EC2 instance accessibility:
+   
    ```bash
-   aws ec2 describe-instances --profile your-profile-name
+   ./list-ec2.sh your-aws-sso-profile-name | grep running
    ```
 
 2. Check CloudWatch for any error logs or metrics
 
 3. Attempt to connect to an instance using Systems Manager:
+   
    ```bash
-   aws ssm start-session --target i-1234567 --profile your-profile-name
+   aws ssm start-session --target i-1234567 --profile your-aws-sso-profile-name
    ```
+
+## Adding an Instance to Target Group
+
+You will need to add one instance at a time to its corresponding target group. Follow these steps:
+
+1. Find the target group by searching for the matching instance name (e.g., 'Gateway' or 'Couchebase'):
+```bash
+./describe-target-groups.sh your-aws-sso-profile-name InstanceName
+```
+
+2. From the output, note down two important pieces of information:
+   - Target Group ARN
+   - Port number from the registered instances (not the target group port)
+
+Example output:
+```json
+[
+  {
+    "Target Group Name": "JBOC-Gateway-HTTPS",
+    "Target Group ARN": "arn:aws:elasticloadbalancing:ca-central-1:1234567:targetgroup/JBOC-Gateway-HTTPS/54e19ae3d3033fda",  # <-- Copy this ARN
+    "Port": 443,
+    "Protocol": "HTTPS",
+    "VPC ID": "vpc-1234567",
+    "Target Type": "instance",
+    "Registered Instances": [
+      {
+        "Instance ID": "i-1234567",
+        "Port": 12345,  # <-- Copy this port number
+        "Health State": "healthy",
+        "Health Description": null,
+        "Instance Name": "Gateway - Tomcat"
+      }
+    ]
+  }
+]
+```
+
+3. Find the instance ID of the new instance you want to register:
+```bash
+./list-ec2.sh your-aws-sso-profile-name
+```
+
+4. Register the instance using the collected information:
+```bash
+./register-target.sh your-aws-sso-profile-name target-group-arn instance-id port-number
+```
+
+Example:
+```bash
+./register-target.sh 1234567 arn:aws:elasticloadbalancing:ca-central-1:1234567:targetgroup/TargetGroupName/12345678 i-12345678 12345
+```
+
+5. Repeat steps 1-4 for each instance that needs to be registered.
+
+**Note**: Make sure to use the port number from the registered instances section (12345 in the example) and not the target group port (443 in the example).
 
 ## Cleaning Up
 
-To remove the stack and associated resources:
+### Automated Cleanup
+To remove the entire stack and associated resources:
 
 ```bash
-./destroy-and-cleanup.sh your-profile-name
+./destroy-and-cleanup.sh your-aws-sso-profile-name
 ```
+
+### What Gets Removed
+The cleanup script will automatically remove:
+- CloudFormation stack and its resources
+- EC2 instances
+- Lambda functions
+- IAM roles and policies created by the stack
+
+### Manual Cleanup Required
+**Important**: The following resources must be cleaned up manually:
+
+1. **EBS Volumes**: 
+   - Navigate to EC2 > Volumes in the AWS Console
+   - Identify volumes that were attached to your terminated instances
+   - Select and delete these volumes to avoid ongoing storage costs
+
+2. **S3 Bucket**: 
+   - Navigate to S3 in the AWS Console
+   - Find the bucket matching the `bootstrap_s3_bucket_name` in your `ec2-config.yaml`
+   - First empty the bucket contents
+   - Then delete the empty bucket
+
+### Verification Steps
+After running the cleanup:
+1. Verify that the CloudFormation stack has been deleted
+2. Check EC2 dashboard for any remaining instances
+3. Review and delete any remaining EBS volumes
+4. Confirm that the bootstrap S3 bucket has been emptied and deleted
+
+**Note**: If you encounter any errors during the cleanup process, please check the CloudFormation console for detailed error messages and ensure you have the necessary permissions.
 
 ## Maintenance and Updates
 
@@ -210,7 +294,7 @@ To remove the stack and associated resources:
    npm update
    ```
 
-2. Check for AWS service updates that might affect the DR solution.
+2. Check for AWS service updates that might affect the solution.
 
 3. Review and update the `ec2-config.yaml` file periodically to ensure it reflects current requirements.
 
