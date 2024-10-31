@@ -85,7 +85,7 @@ rm -rf cdk.context.json cdk.out deployment*.out instance_info.json
 if ! command -v yq &> /dev/null; then
     BUCKET_NAME=$(grep bootstrap_s3_bucket_name ec2-config.yaml | awk '{print $2}')
 else
-    BUCKET_NAME=$(yq eval '.common.bootstrap_s3_bucket_name' ec2-config.yaml)
+    BUCKET_NAME=$(yq -r '.common.bootstrap_s3_bucket_name' ec2-config.yaml)
 fi
 
 echo "CDK stack destroyed, CDKToolkit stack deleted, local context removed."
