@@ -39,13 +39,13 @@ fi
 
 if ! command -v yq &> /dev/null; then
     echo "Error: yq is required but not installed. Please install yq first." >&2
-    echo "Installation instructions: https://github.com/mikefarah/yq#install" >&2
+    echo "Installation instructions: pip install yq" >&2
     exit 1
 fi
 
-# Read account ID and bootstrap bucket from config
-account_id=$(yq eval '.common.account' "$config_file")
-bootstrap_bucket=$(yq eval '.common.bootstrap_s3_bucket_name' "$config_file")
+# Read account ID and bootstrap bucket from config using pip version of yq
+account_id=$(yq -r '.common.account' "$config_file")
+bootstrap_bucket=$(yq -r '.common.bootstrap_s3_bucket_name' "$config_file")
 
 # Validate account ID
 if [ "$account_id" = "null" ] || [ -z "$account_id" ]; then
