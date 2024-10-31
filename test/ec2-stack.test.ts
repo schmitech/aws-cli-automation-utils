@@ -8,7 +8,7 @@ import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 
 // Load actual test config file
-const configPath = path.join(__dirname, 'ec2-config-test.yaml');
+const configPath = path.join(__dirname, '../ec2-config.yaml');
 const config = yaml.load(fs.readFileSync(configPath, 'utf8')) as {
   common: {
     bootstrap_s3_bucket_name: string;
