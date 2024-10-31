@@ -159,7 +159,7 @@ The project is available on an EC2 instance named 'dr-automation-solution' in th
    before running this command, otherwise you may get an error indicating 'bucket already exists'.
    
    ```bash
-   ./cdk-bootstrap.sh your-aws-account-id your-aws-sso-profile-name
+   ./cdk-bootstrap.sh your-aws-sso-profile-name
    ```
 
 4. Synthesize the stack:
