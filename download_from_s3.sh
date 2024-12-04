@@ -2,20 +2,19 @@
 
 # Function to display usage information
 show_help() {
-    echo "Usage: $0 <profile-name> <bucket-name> <source-folder>"
+    echo "Usage: $0 <profile-name> <bucket-name>"
     echo
-    echo "Download S3 folder contents and create a zip file"
+    echo "Download all S3 bucket contents and create a zip file"
     echo
     echo "Arguments:"
     echo "  profile-name         AWS Profile Name"
     echo "  bucket-name          S3 Bucket Name"
-    echo "  source-folder        S3 folder path to download"
     echo
     echo "Example:"
-    echo "  $0 dev-profile my-bucket path/to/folder"
+    echo "  $0 dev-profile my-bucket"
     echo
     echo "Output:"
-    echo "  Creates a zip file named after the downloaded folder in the current directory"
+    echo "  Creates a zip file named after the bucket in the current directory"
 }
 
 # Show help if requested
@@ -25,7 +24,7 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
 fi
 
 # Check if all arguments are provided
-if [ $# -ne 3 ]; then
+if [ $# -ne 2 ]; then
     echo "Error: All arguments are required" >&2
     show_help
     exit 1
@@ -34,7 +33,6 @@ fi
 # Set variables from arguments
 PROFILE_NAME="$1"
 S3_BUCKET="$2"
-S3_FOLDER="$3"
 
 # Ensure AWS CLI is installed and configured
 if ! command -v aws &> /dev/null; then
@@ -56,8 +54,8 @@ temp_dir=$(mktemp -d)
 echo "Created temporary directory: $temp_dir"
 
 # Download files
-echo "Downloading from s3://$S3_BUCKET/$S3_FOLDER"
-aws s3 cp "s3://$S3_BUCKET/$S3_FOLDER" "$temp_dir" --recursive --profile "$PROFILE_NAME"
+echo "Downloading from s3://$S3_BUCKET"
+aws s3 cp "s3://$S3_BUCKET" "$temp_dir" --recursive --profile "$PROFILE_NAME"
 
 # Check if the download was successful
 if [ $? -ne 0 ]; then
@@ -67,7 +65,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Create zip file
-zip_name="$(basename "$S3_FOLDER").zip"
+zip_name="$S3_BUCKET.zip"
 echo "Creating $zip_name in $current_dir"
 
 # Change to temp directory before zipping
