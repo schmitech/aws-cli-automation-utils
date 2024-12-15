@@ -1,0 +1,165 @@
+# Future enhancements for EC2 configuration
+# This is a reference file showing all possible configurations that will be implemented
+# See README.md#todo-future-enhancements for the implementation timeline and priorities
+
+# Basic EC2 Instance Configuration
+ec2_instances:
+  - name: web-server
+    instance_type: t2.micro
+    ami_id: ami-0123456789abcdef0
+    region: us-east-1
+    key_name: my-key-pair
+    subnet_id: subnet-0123456789abcdef0
+    security_group_ids: 
+      - sg-0123456789abcdef0
+
+    # Future Volume Configurations
+    volumes:
+      - device_name: /dev/xvda
+        volume_size: 30
+        volume_type: gp3
+        iops: 3000
+        throughput: 125
+        encrypted: true
+        kms_key_id: arn:aws:kms:region:account:key/key-id
+      - device_name: /dev/xvdf
+        volume_size: 100
+        volume_type: io2
+        iops: 5000
+
+    # Future IAM Role Configuration
+    iam_instance_profile:
+      name: web-server-role
+      policies:
+        - AmazonS3ReadOnlyAccess
+        - AmazonSSMManagedInstanceCore
+      custom_policies:
+        - name: CustomS3Access
+          document: path/to/policy.json
+
+    # Future Network Configuration
+    network:
+      associate_public_ip: true
+      elastic_ip: true
+      network_interfaces:
+        - device_index: 0
+          subnet_id: subnet-0123456789abcdef0
+          security_groups:
+            - sg-0123456789abcdef0
+      vpc_options:
+        tenancy: default
+        hostname_type: resource-name
+
+    # Future Monitoring Configuration
+    monitoring:
+      detailed_monitoring: true
+      cloudwatch_agent: true
+      metrics_collection_interval: 60
+      logs:
+        retention_days: 30
+        log_groups:
+          - name: /aws/ec2/web-server
+            retention_days: 90
+
+    # Future Auto Scaling Configuration
+    auto_scaling:
+      min_size: 1
+      max_size: 4
+      desired_capacity: 2
+      scale_in_protection: true
+      termination_policies:
+        - OldestInstance
+        - NewestInstance
+      target_tracking_policies:
+        - metric: CPUUtilization
+          target_value: 70
+
+    # Future Load Balancer Configuration
+    load_balancer:
+      type: application
+      scheme: internet-facing
+      listeners:
+        - port: 80
+          protocol: HTTP
+          default_actions:
+            - type: forward
+              target_group: web-servers
+      target_groups:
+        - name: web-servers
+          port: 80
+          protocol: HTTP
+          health_check:
+            path: /health
+            interval: 30
+
+    # Future Backup Configuration
+    backup:
+      enabled: true
+      retention_period: 30
+      schedule:
+        frequency: daily
+        window: 03:00-05:00
+      tags:
+        Environment: Production
+        BackupType: Daily
+
+    # Future Tags Configuration
+    tags:
+      Environment: Production
+      Project: WebApp
+      Owner: DevOps
+      CostCenter: CC123
+      AutoStop: true
+
+    # Future User Data Configuration
+    user_data:
+      scripts:
+        - path: scripts/bootstrap.sh
+        - content: |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+            systemctl enable httpd
+
+    # Future Placement Configuration
+    placement:
+      availability_zone: us-east-1a
+      tenancy: dedicated
+      group_name: web-server-placement-group
+      partition_number: 1
+
+    # Future Security Configuration
+    security:
+      disable_api_termination: true
+      require_imdsv2: true
+      ebs_optimized: true
+      monitoring: true
+      metadata_options:
+        http_endpoint: enabled
+        http_tokens: required
+        http_put_response_hop_limit: 1
+
+    # Future License Configuration
+    license:
+      license_configurations:
+        - license_configuration_arn: arn:aws:license-manager:region:account:license-configuration:license-config-id
+
+    # Future Maintenance Configuration
+    maintenance:
+      auto_recovery: true
+      maintenance_window:
+        day: Monday
+        time: 03:00
+      patch_management:
+        enabled: true
+        schedule: cron(0 2 ? * SUN *)
+
+    # Future Resource Access Manager Configuration
+    ram:
+      share_with_accounts:
+        - "123456789012"
+        - "210987654321"
+      share_with_organization: true
+      permissions:
+        - FULL_ACCESS

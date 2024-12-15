@@ -178,6 +178,65 @@ Common issues and solutions:
    - Verify SSO credentials
    - Check session expiration
 
+## TODO: Future Enhancements
+
+This configuration currently implements basic EC2 setup. The following features need to be implemented. A complete reference configuration can be found in [ec2-config-todo.yaml](./ec2-config-todo.yaml).
+
+
+### High Priority
+
+#### 1. IAM Roles & Security
+- Create proper IAM instance profile
+- Implement security group rules
+- Enable IMDSv2 requirement
+- Setup EBS encryption by default
+
+#### 2. Monitoring & Logging
+- Configure CloudWatch agent
+- Setup log groups and retention policies
+- Implement detailed monitoring
+- Add custom metrics collection
+
+#### 3. Networking
+- Proper VPC configuration
+- Setup network interfaces
+- Configure elastic IP handling
+- Implement proper subnet strategy
+
+### Medium Priority
+
+#### 4. Backup & Recovery
+- Implement AWS Backup
+- Configure backup retention policies
+- Setup cross-region backup copies
+- Disaster recovery procedures
+
+#### 5. Auto Scaling
+- Configure ASG policies
+- Setup scaling triggers
+- Implement proper health checks
+- Define capacity limits
+
+#### 6. Load Balancing
+- Setup ALB/NLB as needed
+- Configure target groups
+- Implement health checks
+- Setup SSL/TLS termination
+
+### Low Priority
+
+#### 7. Resource Management
+- Implement proper tagging strategy
+- Setup resource sharing
+- Configure license management
+- Maintenance windows
+
+#### 8. Cost Optimization
+- Implement auto-stop for non-prod
+- Setup reserved instances
+- Configure capacity reservations
+- Implement savings plans
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
