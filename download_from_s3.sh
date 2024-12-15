@@ -1,5 +1,41 @@
 #!/bin/bash
 
+# Description:
+#
+# This script downloads all contents from an AWS S3 bucket and creates a local zip archive.
+# It handles the downloading process safely using a temporary directory and includes
+# error checking at each step.
+#
+# Usage:
+# ./download_from_s3.sh <profile-name> <bucket-name>
+# 
+# Parameters:
+# - profile-name: AWS CLI profile to use for authentication
+# - bucket-name: Name of the S3 bucket to download
+#
+# Example:
+# ./download_from_s3.sh dev-profile my-bucket
+#
+# Process Flow:
+# 1. Creates a temporary directory for downloads
+# 2. Downloads all files from the specified S3 bucket
+# 3. Creates a zip archive of all downloaded files
+# 4. Places the zip file in the current directory
+# 5. Cleans up temporary files
+#
+# Output:
+# - Creates a zip file named <bucket-name>.zip in the current directory
+#
+# Requirements:
+# - AWS CLI installed and configured
+# - zip command-line utility installed
+# - Appropriate AWS permissions to access the S3 bucket
+# - Sufficient local disk space for downloads
+#
+# Exit Codes:
+# - 0: Success
+# - 1: Error (missing dependencies, invalid arguments, download failure)
+
 # Function to display usage information
 show_help() {
     echo "Usage: $0 <profile-name> <bucket-name>"

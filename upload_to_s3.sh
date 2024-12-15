@@ -1,5 +1,46 @@
 #!/bin/bash
 
+# Description:
+#
+# This script uploads contents from a local directory to an AWS S3 bucket root.
+# It provides a simple way to recursively copy local files while maintaining 
+# the directory structure in S3.
+#
+# Features:
+# - Recursive upload of all files and subdirectories
+# - Maintains directory structure in S3
+# - Validates input parameters and requirements
+# - Reports upload success/failure status
+#
+# Usage:
+# ./upload_to_s3.sh <profile-name> <bucket-name> <source-folder>
+#
+# Parameters:
+# - profile-name : AWS CLI profile name for authentication
+# - bucket-name  : Destination S3 bucket name
+# - source-folder: Local directory path containing files to upload
+#
+# Example:
+# ./upload_to_s3.sh dev-profile my-bucket /path/to/local/folder
+#
+# Pre-upload Checks:
+# - Validates presence of AWS CLI
+# - Verifies local folder exists
+# - Confirms all required parameters are provided
+#
+# Requirements:
+# - AWS CLI installed and configured
+# - Valid AWS profile with S3 upload permissions
+# - Existing source directory with read permissions
+#
+# Exit Codes:
+# - 0: Success (upload completed successfully)
+# - 1: Error (missing dependencies, invalid arguments, upload failure)
+#
+# Note:
+# The script uploads to the root of the S3 bucket while preserving
+# the directory structure from the source folder
+
 # Function to display usage information
 show_help() {
     echo "Usage: $0 <profile-name> <bucket-name> <source-folder>"

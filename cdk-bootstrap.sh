@@ -1,5 +1,35 @@
 #!/bin/bash
 
+# Description:
+#
+# This script bootstraps AWS CDK in a specified AWS account. It reads configuration
+# from a YAML file and sets up the necessary resources for CDK deployment, including
+# a custom bootstrap bucket name. The bootstrap process creates the foundational
+# resources needed for CDK operations.
+#
+# Usage:
+# ./cdk-bootstrap.sh <profile-name>
+#
+# Parameters:
+# - profile-name: AWS CLI profile to use for authentication
+#
+# Example:
+# ./cdk-bootstrap.sh dev-profile
+#
+# Requirements:
+# - AWS CDK CLI installed
+# - yq installed (pip install yq)
+# - Valid AWS profile with bootstrap permissions
+# - ec2-config.yaml file in current directory
+#
+# Exit Codes:
+# - 0: Success (bootstrap completed)
+# - 1: Error (missing dependencies, invalid config, bootstrap failure)
+#
+# Note:
+# The bootstrap process uses AdministratorAccess policy for
+# CloudFormation execution to ensure full functionality
+
 # Function to display usage information
 show_help() {
     echo "Usage: $0 <profile-name>"

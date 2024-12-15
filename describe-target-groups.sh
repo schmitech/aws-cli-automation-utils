@@ -1,9 +1,52 @@
 #!/bin/bash
 
+# Description:
+# This script queries AWS Elastic Load Balancer v2 (ELBv2) target groups and provides detailed information
+# about matching target groups and their registered instances. It supports searching for multiple target
+# groups simultaneously using case-insensitive pattern matching.
+#
+# Features:
+# - Searches target groups based on one or more search terms
+# - Shows target group details including name, ARN, port, protocol, and VPC ID
+# - Lists all registered instances for each target group
+# - Displays instance health status and port configuration
+# - Retrieves and includes instance names from EC2 tags
+#
+# Usage:
+# ./describe-target-groups.sh <aws_profile> <search_term1> [search_term2] [search_term3] ...
+#
+# Parameters:
+# - aws_profile: AWS CLI profile name to use for authentication
+# - search_terms: One or more terms to filter target groups (case-insensitive)
+#
+# Example:
+# ./describe-target-groups.sh myprofile webapp database
+#
+# Output Format:
+# - JSON array containing matching target groups
+# - Each target group includes:
+#   * Target Group Name
+#   * Target Group ARN
+#   * Port
+#   * Protocol
+#   * VPC ID
+#   * Target Type
+#   * List of registered instances with:
+#     - Instance ID
+#     - Port
+#     - Health State
+#     - Health Description
+#     - Instance Name (from EC2 tags)
+#
+# Requirements:
+# - AWS CLI configured with appropriate permissions
+# - jq installed for JSON processing
+# - Permissions to describe target groups and EC2 instances
+
 # Check if at least two arguments are provided (profile and one search term)
 if [ $# -lt 2 ]; then
     echo "Usage: $0 <aws_profile> <search_term1> [search_term2] [search_term3] ..."
-    echo "Example: $0 1234567 couchbase gateway innova"
+    echo "Example: $0 1234567 instance1 instance2"
     exit 1
 fi
 

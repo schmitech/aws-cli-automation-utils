@@ -1,5 +1,33 @@
 #!/bin/bash
 
+# Description:
+# This script registers an EC2 instance with an Application Load Balancer (ALB) target group
+# and monitors the health status until the instance becomes healthy or times out.
+#
+# Usage:
+# ./register-target.sh <aws_profile> <target_group_arn> <instance_id> <port>
+#
+# Parameters:
+# - aws_profile      : AWS CLI profile name for authentication
+# - target_group_arn : ARN of the target group to register with
+# - instance_id      : EC2 instance ID to register
+# - port            : Port number the instance will receive traffic on
+#
+# Example:
+# ./register-target.sh myprofile \
+#   arn:aws:elasticloadbalancing:region:account:targetgroup/name/1234567890 \
+#   i-0123456789abcdef0 8080
+#
+# Exit Codes:
+# - 0: Success - Instance registered and healthy
+# - 1: Error - Various failure conditions (invalid input, registration failed, unhealthy)
+#
+# Requirements:
+# - AWS CLI with appropriate permissions
+# - jq installed for JSON processing
+# - Permissions to describe and modify target groups
+# - Permissions to describe EC2 instances
+
 # Function to check if a value is a valid positive integer
 is_positive_integer() {
     [[ $1 =~ ^[0-9]+$ ]] && [ "$1" -gt 0 ] && [ "$1" -le 65535 ]

@@ -1,8 +1,8 @@
-# DR Automation Project
+# AWS CLI Automation Utils
 
 ## Project Overview
 
-This project leverages AWS CDK with TypeScript to automate cloud resource provisioning for disaster recovery. It streamlines environment setup and management in AWS, ensuring swift recovery in disaster scenarios.
+This project leverages AWS CDK with TypeScript to automate cloud resource provisioning and management. It streamlines environment setup and management in AWS, with a focus on EC2 instance deployment and configuration.
 
 ```mermaid
 sequenceDiagram
@@ -31,31 +31,7 @@ sequenceDiagram
     CDK-->>User: Deployment complete
 ```
 
-## Table of Contents
-
-- [DR Automation Project](#dr-automation-project)
-  - [Project Overview](#project-overview)
-  - [Table of Contents](#table-of-contents)
-  - [Prerequisites (first-time setup only)](#prerequisites-first-time-setup-only)
-  - [First-Time Setup](#first-time-setup)
-    - [Install Global Dependencies](#install-global-dependencies)
-  - [AWS Account Setup](#aws-account-setup)
-    - [Login to AWS via SSO](#login-to-aws-via-sso)
-    - [Test AWS Access](#test-aws-access)
-  - [Git Repository](#git-repository)
-  - [Using the Project](#using-the-project)
-  - [Deploying EC2 Instances](#deploying-ec2-instances)
-  - [Verification](#verification)
-  - [Adding an Instance to Target Group](#adding-an-instance-to-target-group)
-  - [Cleaning Up](#cleaning-up)
-    - [Automated Cleanup](#automated-cleanup)
-    - [What Gets Removed](#what-gets-removed)
-    - [Manual Cleanup Required](#manual-cleanup-required)
-    - [Verification Steps](#verification-steps)
-  - [Maintenance and Updates](#maintenance-and-updates)
-  - [Troubleshooting](#troubleshooting)
-
-## Prerequisites (first-time setup only)
+## Prerequisites
 
 Ensure the following are installed on your system:
 
@@ -67,252 +43,157 @@ Ensure the following are installed on your system:
 6. **AWS Session Manager Plugin**
 7. **jq**
 
-## First-Time Setup
+## Installation
 
-### Install Global Dependencies
+### Install aws-cdk
 
-Run the following command to install necessary global dependencies:
-
-```bash
-npm install -g aws-cdk@2.151.0
-```
-
-## AWS Account Setup
-
-Skip this section if you already have an AWS account set up.
-
-### Login to AWS via SSO
-
-If you have an existing AWS SSO profile:
+Install the latest version of AWS CDK, but it's generally better to specify a version to ensure consistency across team members and deployments. Here are the options:
 
 ```bash
-aws sso login --profile your-aws-sso-profile-name
+# For latest version:
+npm install -g aws-cdk
+
+# For a specific version (recommended):
+npm install -g aws-cdk@2.99.1  # Replace with your desired version
+
+# To check your currently installed version:
+cdk --version
 ```
 
-For new SSO setup:
+### AWS Account Setup
 
-1. Log in to AWS via MS365 or Office.com AWS app and copy the URL from the AccessKeys link.
-2. Open a terminal and run:
-
+1. Configure AWS SSO (if using SSO):
 ```bash
 aws configure sso
 ```
 
-Follow the prompts, providing the necessary information (this info is available on your AWS account landing page), then make sure profile has been created once finished setting up your sso profile:
-
+2. Test your AWS access:
 ```bash
-cat ~/.aws/config
+aws s3 ls --profile your-profile-name
 ```
 
+### Project Setup
 
-### Test AWS Access
-
-Verify your AWS access:
-
+1. Clone the repository:
 ```bash
-aws s3 ls --profile your-aws-sso-profile-name
+git clone https://github.com/schmitech/aws-cli-automation-utils.git
+cd aws-cli-automation-utils
 ```
-
-## Git Repository
-
-1. Clone the repository (use 'dr-automation' as folder name):
-   ```bash
-   git clone [repository-url]
-   cd dr-automation
-   ```
 
 2. Install project dependencies:
-   ```bash
-   npm install
-   ```
-
-## Using the Project
-
-The project is available on an EC2 instance named 'dr-automation-solution' in the DEV environment.
-
-1. Connect to the instance (replace i-1234567 with real instance id):
-   ```bash
-   aws ssm start-session --target i-1234567 --profile your-aws-sso-profile-name --region ca-central-1
-   ```
-
-2. Once connected, run:
-   ```bash
-   sudo su - ec2-user
-   cd dr-automation
-   aws sso login --profile your-aws-sso-profile-name
-   ```
-
-## Deploying EC2 Instances
-
-1. Navigate to the project directory:
-   ```bash
-   cd dr-automation
-   ```
-
-2. Edit `ec2-config.yaml`:
-   - Update AMI IDs based on AWS Backup job results
-   - Modify instance types or other parameters as needed
-
-3. Bootstrap CDK.
-   
-   First you need make sure the bucket name you are using does not exist, so check in S3 console to make sure it's not present
-   before running this command, otherwise you may get an error indicating 'bucket already exists'.
-   
-   ```bash
-   ./cdk-bootstrap.sh your-aws-sso-profile-name
-   ```
-
-4. Synthesize the stack:
-   ```bash
-   cdk synth
-   ```
-
-5. Deploy the stack:
-   
-   ```bash
-   ./cdk-deploy.sh your-aws-sso-profile-name
-   ```
-
-   The deployment output will be saved in `deployment_output_yyyymmdd_hhmm.out`.
-
-## Verification
-
-After deployment, perform these basic tests:
-
-1. Verify EC2 instance accessibility:
-   
-   ```bash
-   ./list-ec2.sh your-aws-sso-profile-name | grep running
-   ```
-
-2. Check CloudWatch for any error logs or metrics
-
-3. Attempt to connect to an instance using Systems Manager:
-   
-   ```bash
-   aws ssm start-session --target i-1234567 --profile your-aws-sso-profile-name
-   ```
-
-## Adding an Instance to Target Group
-
-You will need to add one instance at a time to its corresponding target group. Follow these steps:
-
-1. Find the target group by searching for the matching instance name (e.g., 'Gateway' or 'Couchebase'):
 ```bash
-./describe-target-groups.sh your-aws-sso-profile-name InstanceName
+npm install
 ```
 
-2. From the output, note down two important pieces of information:
-   - Target Group ARN
-   - Port number from the registered instances (not the target group port)
+## Usage
 
-Example output:
-```json
-[
-  {
-    "Target Group Name": "JBOC-Gateway-HTTPS",
-    "Target Group ARN": "arn:aws:elasticloadbalancing:ca-central-1:1234567:targetgroup/JBOC-Gateway-HTTPS/54e19ae3d3033fda",  # <-- Copy this ARN
-    "Port": 443,
-    "Protocol": "HTTPS",
-    "VPC ID": "vpc-1234567",
-    "Target Type": "instance",
-    "Registered Instances": [
-      {
-        "Instance ID": "i-1234567",
-        "Port": 12345,  # <-- Copy this port number
-        "Health State": "healthy",
-        "Health Description": null,
-        "Instance Name": "Gateway - Tomcat"
-      }
-    ]
-  }
-]
-```
+### Deploying EC2 Instances
 
-3. Find the instance ID of the new instance you want to register:
+1. Configure your instances in `ec2-config.yaml`:
+   - Set AMI IDs
+   - Configure instance types and other parameters
+
+2. Bootstrap CDK:
 ```bash
-./list-ec2.sh your-aws-sso-profile-name
+./cdk-bootstrap.sh your-profile-name
 ```
 
-4. Register the instance using the collected information:
+3. Synthesize and deploy:
 ```bash
-./register-target.sh your-aws-sso-profile-name target-group-arn instance-id port-number
+cdk synth
+./cdk-deploy.sh your-profile-name
 ```
 
-Example:
+### Verification
+
+1. Check EC2 instance status:
 ```bash
-./register-target.sh 1234567 arn:aws:elasticloadbalancing:ca-central-1:1234567:targetgroup/TargetGroupName/12345678 i-12345678 12345
+./list-ec2.sh your-profile-name | grep running
 ```
 
-5. Repeat steps 1-4 for each instance that needs to be registered.
-
-**Note**: Make sure to use the port number from the registered instances section (12345 in the example) and not the target group port (443 in the example).
-
-## Cleaning Up
-
-### Automated Cleanup
-To remove the entire stack and associated resources:
-
+2. Test instance connectivity:
 ```bash
-./destroy-and-cleanup.sh your-aws-sso-profile-name
+aws ssm start-session --target i-1234567 --profile your-profile-name
 ```
 
-### What Gets Removed
-The cleanup script will automatically remove:
-- CloudFormation stack and its resources
-- EC2 instances
-- Lambda functions
-- IAM roles and policies created by the stack
+### Target Group Management
+
+To register an instance with a target group:
+
+1. List target groups:
+```bash
+./describe-target-groups.sh your-profile-name instance-name
+```
+
+2. Register an instance:
+```bash
+./register-target.sh your-profile-name target-group-arn instance-id port-number
+```
+
+## Cleanup
+Remove the stack and resources:
+```bash
+./cdk-destroy.sh your-profile-name
+```
 
 ### Manual Cleanup Required
-**Important**: The following resources must be cleaned up manually:
 
 1. **EBS Volumes**: 
-   - Navigate to EC2 > Volumes in the AWS Console
-   - Identify volumes that were attached to your terminated instances
-   - Select and delete these volumes to avoid ongoing storage costs
+   - Delete any remaining EBS volumes via EC2 Console
 
 2. **S3 Bucket**: 
-   - Navigate to S3 in the AWS Console
-   - Find the bucket matching the `bootstrap_s3_bucket_name` in your `ec2-config.yaml`
-   - First empty the bucket contents
-   - Then delete the empty bucket
+   - Empty and delete the bootstrap bucket
 
-### Verification Steps
-After running the cleanup:
-1. Verify that the CloudFormation stack has been deleted
-2. Check EC2 dashboard for any remaining instances
-3. Review and delete any remaining EBS volumes
-4. Confirm that the bootstrap S3 bucket has been emptied and deleted
+### Verification
+- Confirm CloudFormation stack deletion
+- Check for remaining EC2 instances
+- Review and remove any remaining EBS volumes
+- Verify bootstrap S3 bucket deletion
 
-**Note**: If you encounter any errors during the cleanup process, please check the CloudFormation console for detailed error messages and ensure you have the necessary permissions.
+## Maintenance
 
-## Maintenance and Updates
+1. Update dependencies:
+```bash
+npm update
+```
 
-1. Regularly update the AWS CDK and other dependencies:
-   ```bash
-   npm update
-   ```
-
-2. Check for AWS service updates that might affect the solution.
-
-3. Review and update the `ec2-config.yaml` file periodically to ensure it reflects current requirements.
+2. Review and update `ec2-config.yaml` as needed
 
 ## Troubleshooting
 
 Common issues and solutions:
 
-1. **CDK deployment fails**: 
-   - Ensure you have the latest CDK version installed
-   - Check AWS credentials and permissions
-   - Review CloudFormation events in the AWS Console
+1. **CDK Deployment Issues**
+   - Verify AWS credentials and permissions
+   - Check CloudFormation events in AWS Console
+   - Ensure latest CDK version is installed
 
-2. **Unable to connect to EC2 instances**: 
+2. **EC2 Connectivity Issues**
    - Verify VPC and security group settings
-   - Check instance status in EC2 dashboard
-   - Ensure Systems Manager Agent is running on the instance
+   - Check instance status
+   - Confirm Systems Manager Agent is running
 
-3. **AWS SSO login issues**: 
-   - Clear browser cookies and cache
-   - Verify your SSO credentials
-   - Check if your SSO session has expired
+3. **AWS SSO Issues**
+   - Clear browser cache
+   - Verify SSO credentials
+   - Check session expiration
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Copyright 2024 Schmitech Inc.

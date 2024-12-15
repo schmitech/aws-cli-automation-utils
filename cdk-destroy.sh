@@ -1,5 +1,52 @@
 #!/bin/bash
 
+# Description:
+#
+# This script performs a complete cleanup of AWS CDK resources, including the stack,
+# CDK toolkit, local files, and provides guidance for manual S3 bucket cleanup.
+# It ensures a thorough removal of all CDK-related resources to prevent lingering
+# costs and resources.
+#
+# Usage:
+# ./cdk-destroy.sh <profile-name>
+#
+# Parameters:
+# - profile-name: AWS CLI profile to use for authentication
+#
+# Example:
+# ./cdk-destroy.sh dev-profile
+#
+# Cleanup Process:
+# 1. Destroys the CDK application stack
+# 2. Removes the CDKToolkit CloudFormation stack
+# 3. Clears local CDK context
+# 4. Removes local CDK files:
+#    - cdk.context.json
+#    - cdk.out directory
+#    - deployment logs
+#    - instance information files
+# 5. Provides instructions for S3 bucket cleanup
+#
+# Requirements:
+# - AWS CDK CLI installed
+# - AWS CLI installed
+# - Valid AWS profile with deletion permissions
+# - ec2-config.yaml file in current directory
+# - Optional: yq tool for YAML parsing
+#
+# Exit Codes:
+# - 0: Success (cleanup completed)
+# - 1: Error (missing dependencies, invalid profile, cleanup failure)
+#
+# Safety Features:
+# - Exits on first error (set -e)
+# - Validates required tools before proceeding
+# - Checks for config file existence
+#
+# Note:
+# Manual cleanup of the S3 bootstrap bucket is required through
+# the AWS Console to ensure complete resource removal
+
 set -e  # Exit immediately if a command exits with a non-zero status.
 
 # Color definitions

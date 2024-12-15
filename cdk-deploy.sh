@@ -1,5 +1,38 @@
 #!/bin/bash
 
+# Description:
+#
+# This script automates the deployment of an AWS CDK stack using a specified AWS profile.
+# It executes the CDK deployment process and logs all output to a timestamped file for
+# future reference and troubleshooting.
+#
+# Usage:
+# ./cdk-deploy.sh <profile-name>
+#
+# Parameters:
+# - profile-name: AWS CLI profile to use for authentication
+#
+# Example:
+# ./cdk-deploy.sh dev-profile
+#
+# Output:
+# - Creates deployment_YYYYMMDD_HHMMSS.out log file
+# - Displays real-time deployment progress
+# - Shows final deployment status
+#
+# Requirements:
+# - AWS CDK CLI installed
+# - Valid AWS profile with deployment permissions
+# - 'script' command available (for output logging)
+#
+# Exit Codes:
+# - 0: Success (deployment completed)
+# - 1: Error (missing dependencies, invalid profile, deployment failure)
+#
+# Note:
+# Uses --require-approval broadening flag to auto-approve
+# non-security-impacting changes during deployment
+
 # Function to display usage information
 show_help() {
     echo "Usage: $0 <profile-name>"

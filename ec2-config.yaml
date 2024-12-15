@@ -1,49 +1,14 @@
 common:
-  bootstrap_s3_bucket_name: jboc-ca-central-1-s3-bootstrap-dr
-  vpc_id: vpc-1234567
+  bootstrap_s3_bucket_name: my-cdk-bootstrap-bucket
+  vpc_id: vpc-7531n846v17385e92
   region: ca-central-1
-  account: 'XXXXXXXXXXX'
+  account: '123456789'
 
 ec2_instances:
-  - name: Gateway Tomcat - DRTest
+  - name: MyInstance
     instance_class: T3
     instance_size: XLARGE
-    ami_id: ami-1234567
-    subnet_id: subnet-12345678
-    security_group_id: sg-1234567
-    availability_zone: ca-central-1d
-  - name: Gateway Couchbase - DRTest
-    instance_class: T3
-    instance_size: XLARGE
-    ami_id: ami-1234567
-    subnet_id: subnet-12345678
-    security_group_id: sg-12345678
-    availability_zone: ca-central-1d
-  - name: Ultra Engine IIS - DRTest
-    instance_class: T3
-    instance_size: XLARGE
-    ami_id: ami-1234567
-    subnet_id: subnet-12345678
-    security_group_id: sg-12345678
-    availability_zone: ca-central-1d
-  - name: UE Couchbase DB - DRTest
-    instance_class: T3
-    instance_size: XLARGE
-    ami_id: ami-1234567
-    subnet_id: subnet-12345678
-    security_group_id: sg-12345678
-    availability_zone: ca-central-1d
-  - name: Transaction Manager- DRTest
-    instance_class: T3
-    instance_size: LARGE
-    ami_id: ami-1234567
-    subnet_id: subnet-12345678
-    security_group_id: sg-12345678
-    availability_zone: ca-central-1d
-  - name: Innovatrics 9 - DRTest
-    instance_class: T3
-    instance_size: XLARGE2
-    ami_id: ami-1234567
-    subnet_id: subnet-12345678
-    security_group_id: sg-12345678
-    availability_zone: ca-central-1d
+    ami_id: ami-0a123b456c789d012
+    subnet_id: subnet-0abc123de456f7890
+    security_group_id: sg-0a123b456c789d012
+    availability_zone: ca-central-1a
