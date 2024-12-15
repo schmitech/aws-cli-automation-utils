@@ -16,17 +16,6 @@
 # Example:
 # ./cdk-destroy.sh dev-profile
 #
-# Cleanup Process:
-# 1. Destroys the CDK application stack
-# 2. Removes the CDKToolkit CloudFormation stack
-# 3. Clears local CDK context
-# 4. Removes local CDK files:
-#    - cdk.context.json
-#    - cdk.out directory
-#    - deployment logs
-#    - instance information files
-# 5. Provides instructions for S3 bucket cleanup
-#
 # Requirements:
 # - AWS CDK CLI installed
 # - AWS CLI installed

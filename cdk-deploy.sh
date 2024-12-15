@@ -79,7 +79,14 @@ logfile="deployment_${timestamp}.out"
 echo "Starting CDK deployment with profile ${aws_profile}"
 echo "Logging output to: ${logfile}"
 
-script -c "cdk deploy --require-approval broadening --profile ${aws_profile}" "${logfile}"
+# Check the OS type to determine the correct command
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS version
+    script "${logfile}" cdk deploy --require-approval broadening --profile "${aws_profile}"
+else
+    # Linux version
+    script -c "cdk deploy --require-approval broadening --profile ${aws_profile}" "${logfile}"
+fi
 
 # Check if the command was successful
 if [ $? -ne 0 ]; then
